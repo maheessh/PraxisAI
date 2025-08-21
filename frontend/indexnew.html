@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Teacher Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
+        .main-bg { background-color: #003d4d; }
+        .accent-bg { background-color: #005f73; }
+        .text-accent { color: #ffeadb; }
+        .card-bg { background-color: #ffffff; }
+        .sidebar-icon { transition: all 0.2s ease-in-out; }
+        .sidebar-icon:hover { transform: scale(1.1); color: #ffeadb; }
+        .btn-primary { background-color: #007a93; color: #ffffff; transition: background-color 0.3s; }
+        .btn-primary:hover { background-color: #005f73; }
+        .btn-primary:disabled { background-color: #005f73; cursor: not-allowed; opacity: 0.7; }
+        .gradient-banner { background: linear-gradient(90deg, rgba(0,95,115,1) 0%, rgba(0,61,77,1) 100%); }
+        .action-button { background-color: #e0f2f1; color: #00796b; transition: all 0.2s; }
+        .action-button:hover { background-color: #b2dfdb; transform: translateY(-2px); }
+    </style>
+</head>
+<body class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-20 md:w-64 main-bg text-white flex flex-col flex-shrink-0">
+        <div class="h-20 flex items-center justify-center border-b border-gray-700">
+            <svg class="h-10 w-10 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.747-8.247l11.494 4.994M6.253 18l11.494-4.994"/></svg>
+            <h1 class="hidden md:block ml-3 text-2xl font-bold text-accent">Praxis AI</h1>
+        </div>
+        <nav class="flex-1 px-4 py-8 space-y-4">
+            <a href="#" id="dashboard-link" class="flex items-center p-2 rounded-lg accent-bg shadow-md">
+                <svg class="h-6 w-6 sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <span class="hidden md:block ml-4 font-semibold">Dashboard</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <header class="h-20 flex items-center justify-between px-8 bg-white border-b flex-shrink-0">
+            <h2 class="text-2xl font-bold text-gray-800">Welcome, Teacher!</h2>
+            <div id="status-indicator" class="flex items-center space-x-2">
+                <div id="status-dot" class="h-3 w-3 rounded-full bg-yellow-400"></div>
+                <span id="status-text" class="text-sm font-medium text-gray-600">AI Model Loading...</span>
+            </div>
+        </header>
+        <div id="main-content" class="flex-1 p-8 overflow-y-auto">
+            <!-- Content will be injected here -->
+        </div>
+    </main>
+
+    <!-- Modal for Upload -->
+    <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all duration-300 scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-800">Upload Your Content</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+            </div>
+            <p class="text-gray-600 mb-6">Upload a document (.pdf or .txt) to get started.</p>
+            <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-gray-400">
+                <p class="text-gray-500">Drag & drop your file here</p>
+                <p class="text-gray-400 text-sm my-2">or</p>
+                <button id="browseButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg">Browse File</button>
+                <input type="file" id="fileInput" class="hidden" accept=".pdf,.txt">
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="processContentBtn" class="btn-primary font-bold py-2 px-6 rounded-lg flex items-center">
+                    <span id="buttonText">Process Content</span>
+                    <svg id="loadingSpinner" class="animate-spin -mr-1 ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const mainContent = document.getElementById('main-content');
+        const uploadModal = document.getElementById('uploadModal');
+        const closeModal = document.getElementById('closeModal');
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const browseButton = document.getElementById('browseButton');
+        const processContentBtn = document.getElementById('processContentBtn');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const dashboardLink = document.getElementById('dashboard-link');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+
+        // --- State ---
+        const BACKEND_URL = 'http://127.0.0.1:8000';
+        let fulltextContent = '';
+
+        // --- HTML Templates ---
+        const initialDashboardHTML = `
+            <div class="gradient-banner rounded-xl shadow-lg p-8 mb-8 flex items-center justify-between">
+                <div>
+                    <h3 class="text-3xl font-bold text-white">Let's Create a New Lesson</h3>
+                    <p class="text-accent mt-2">Upload your content to get started with AI-powered slides, quizzes, and more.</p>
+                </div>
+                <button id="uploadButton" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-transform">
+                    Upload Content
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">Recent Activity</h4></div>
+                <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">My Classes</h4></div>
+                <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h4></div>
+            </div>`;
+
+        function showDashboard() {
+            mainContent.innerHTML = initialDashboardHTML;
+            document.getElementById('uploadButton').addEventListener('click', showModal);
+        }
+
+        // --- Status Checking ---
+        async function checkBackendStatus() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/status`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                if (data.is_ready) {
+                    statusDot.classList.remove('bg-yellow-400', 'bg-red-500');
+                    statusDot.classList.add('bg-green-500');
+                    statusText.textContent = 'AI Model Ready';
+                } else if (data.error_message) {
+                    statusDot.classList.remove('bg-yellow-400', 'bg-green-500');
+                    statusDot.classList.add('bg-red-500');
+                    statusText.textContent = 'AI Model Error';
+                    alert(`Backend Error: ${data.error_message}`);
+                } else {
+                    // Still loading, check again
+                    setTimeout(checkBackendStatus, 5000);
+                }
+            } catch (error) {
+                statusDot.classList.remove('bg-yellow-400', 'bg-green-500');
+                statusDot.classList.add('bg-red-500');
+                statusText.textContent = 'Backend Unreachable';
+                console.error("Could not connect to backend.", error);
+            }
+        }
+        
+        // --- Modal ---
+        const showModal = () => uploadModal.classList.remove('hidden', 'flex') || uploadModal.classList.add('flex');
+        const hideModal = () => uploadModal.classList.add('hidden');
+        closeModal.addEventListener('click', hideModal);
+        browseButton.addEventListener('click', () => fileInput.click());
+        dashboardLink.addEventListener('click', (e) => { e.preventDefault(); showDashboard(); });
+
+        // --- File Handling ---
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('border-blue-500'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-blue-500'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('border-blue-500');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                updateDropzoneText(fileInput.files[0].name);
+            }
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) updateDropzoneText(fileInput.files[0].name);
+        });
+        const updateDropzoneText = (name) => dropzone.querySelector('p').textContent = `File: ${name}`;
+
+        // --- API Calls ---
+        function setLoading(isLoading, btn, textEl, spinnerEl, text) {
+            btn.disabled = isLoading;
+            textEl.textContent = isLoading ? 'Generating...' : text;
+            spinnerEl.classList.toggle('hidden', !isLoading);
+        }
+
+        async function makeApiCall(endpoint, content, button, textElement, spinnerElement, buttonText, displayFunction) {
+            setLoading(true, button, textElement, spinnerElement, buttonText);
+            const formData = new FormData();
+            formData.append('content', content);
+            try {
+                const response = await fetch(`${BACKEND_URL}${endpoint}`, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                displayFunction(result);
+            } catch (error) {
+                alert(`An error occurred: ${error.message}`);
+            } finally {
+                setLoading(false, button, textElement, spinnerElement, buttonText);
+            }
+        }
+
+        processContentBtn.addEventListener('click', async () => {
+            if (!fileInput.files[0]) {
+                alert('Please select a file.');
+                return;
+            }
+            setLoading(true, processContentBtn, buttonText, loadingSpinner, 'Process Content');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            try {
+                const response = await fetch(`${BACKEND_URL}/process-content/`, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                fulltextContent = result.full_content; // Save full content
+                displayLessonHub(result);
+                hideModal();
+            } catch (error) {
+                alert(`An error occurred: ${error.message}`);
+            } finally {
+                setLoading(false, processContentBtn, buttonText, loadingSpinner, 'Process Content');
+            }
+        });
+
+        // --- Display Functions ---
+        function displayLessonHub(data) {
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-md p-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Lesson Hub</h2>
+                    <p class="text-gray-600 mb-6">Generated from: <strong>${data.summary}</strong></p>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Actions -->
+                        <div class="lg:col-span-1 flex flex-col space-y-4">
+                            <button id="genSlidesBtn" class="action-button font-bold py-3 px-4 rounded-lg w-full text-left">View Slide Topics</button>
+                            <button id="genQuizBtn" class="action-button font-bold py-3 px-4 rounded-lg w-full text-left flex items-center">
+                                <span class="flex-1">Generate 5-Question Quiz</span>
+                                <svg id="quizSpinner" class="animate-spin ml-2 h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                            <button id="genAnnounceBtn" class="action-button font-bold py-3 px-4 rounded-lg w-full text-left flex items-center">
+                                <span class="flex-1">Generate Announcement</span>
+                                <svg id="announceSpinner" class="animate-spin ml-2 h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                        </div>
+                        <!-- Content Display -->
+                        <div id="hub-content-display" class="lg:col-span-2 bg-gray-50 rounded-lg p-6 min-h-[300px]"></div>
+                    </div>
+                </div>`;
+            
+            const hubDisplay = document.getElementById('hub-content-display');
+            
+            const displaySlides = () => {
+                hubDisplay.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4">Suggested Slide Topics:</h3>
+                    <ul class="list-disc list-inside space-y-2">${data.slide_topics.map(t => `<li class="text-gray-700">${t}</li>`).join('')}</ul>`;
+            };
+
+            const displayQuiz = (quizData) => {
+                hubDisplay.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4">Generated Quiz:</h3>
+                    <div class="space-y-4">${quizData.quiz.map((q, i) => `
+                        <div class="text-gray-800">
+                            <p class="font-semibold">${i+1}. ${q.question}</p>
+                            <p class="text-sm text-green-600 font-medium">Answer: ${q.answer}</p>
+                        </div>`).join('')}
+                    </div>`;
+            };
+
+            const displayAnnouncement = (announceData) => {
+                hubDisplay.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4">Generated Announcement:</h3>
+                    <p class="text-gray-800 whitespace-pre-wrap">${announceData.announcement_text}</p>`;
+            };
+
+            document.getElementById('genSlidesBtn').addEventListener('click', displaySlides);
+            document.getElementById('genQuizBtn').addEventListener('click', (e) => makeApiCall('/generate-quiz/', fulltextContent, e.currentTarget, e.currentTarget.querySelector('span'), document.getElementById('quizSpinner'), 'Generate 5-Question Quiz', displayQuiz));
+            document.getElementById('genAnnounceBtn').addEventListener('click', (e) => makeApiCall('/generate-announcement/', fulltextContent, e.currentTarget, e.currentTarget.querySelector('span'), document.getElementById('announceSpinner'), 'Generate Announcement', displayAnnouncement));
+
+            displaySlides(); // Show slides by default
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            showDashboard();
+            checkBackendStatus();
+        });
+    </script>
+</body>
+</html>
