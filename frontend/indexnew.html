@@ -1,275 +1,526 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Teacher Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
-        .main-bg { background-color: #003d4d; }
-        .accent-bg { background-color: #005f73; }
-        .text-accent { color: #ffeadb; }
-        .card-bg { background-color: #ffffff; }
-        .sidebar-icon { transition: all 0.2s ease-in-out; }
-        .sidebar-icon:hover { transform: scale(1.1); color: #ffeadb; }
-        .btn-primary { background-color: #007a93; color: #ffffff; transition: background-color 0.3s; }
-        .btn-primary:hover { background-color: #005f73; }
-        .btn-primary:disabled { background-color: #005f73; cursor: not-allowed; opacity: 0.7; }
-        .gradient-banner { background: linear-gradient(90deg, rgba(0,95,115,1) 0%, rgba(0,61,77,1) 100%); }
-        .action-button { background-color: #e0f2f1; color: #00796b; transition: all 0.2s; }
-        .action-button:hover { background-color: #b2dfdb; transform: translateY(-2px); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Teacher Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; }
+    .main-bg { background-color: #003d4d; }
+    .accent-bg { background-color: #005f73; }
+    .text-accent { color: #ffeadb; }
+    .card-bg { background-color: #ffffff; }
+    .btn-primary { background-color: #007a93; color: #ffffff; transition: background-color 0.3s; }
+    .btn-primary:hover { background-color: #005f73; }
+    .btn-primary:disabled { background-color: #005f73; cursor: not-allowed; opacity: 0.7; }
+    .gradient-banner { background: linear-gradient(90deg, rgba(0,95,115,1) 0%, rgba(0,61,77,1) 100%); }
+    .tab-button { border-color: transparent; color: #4a5568; }
+    .tab-button.active { border-color: #007a93; color: #007a93; background-color: #e0f2f1; }
+    .kbd {
+      background:#f3f4f6; border:1px solid #e5e7eb; border-bottom-width:2px; padding:.1rem .35rem; border-radius:.375rem; font-family:ui-monospace,SFMono-Regular,Menlo;
+    }
+    .badge { font-size:.75rem; padding:.15rem .5rem; border-radius:9999px; border:1px solid #e5e7eb; }
+  </style>
 </head>
 <body class="flex h-screen">
 
-    <!-- Sidebar -->
-    <aside class="w-20 md:w-64 main-bg text-white flex flex-col flex-shrink-0">
-        <div class="h-20 flex items-center justify-center border-b border-gray-700">
-            <svg class="h-10 w-10 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.747-8.247l11.494 4.994M6.253 18l11.494-4.994"/></svg>
-            <h1 class="hidden md:block ml-3 text-2xl font-bold text-accent">Praxis AI</h1>
-        </div>
-        <nav class="flex-1 px-4 py-8 space-y-4">
-            <a href="#" id="dashboard-link" class="flex items-center p-2 rounded-lg accent-bg shadow-md">
-                <svg class="h-6 w-6 sidebar-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                <span class="hidden md:block ml-4 font-semibold">Dashboard</span>
-            </a>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
-        <header class="h-20 flex items-center justify-between px-8 bg-white border-b flex-shrink-0">
-            <h2 class="text-2xl font-bold text-gray-800">Welcome, Teacher!</h2>
-            <div id="status-indicator" class="flex items-center space-x-2">
-                <div id="status-dot" class="h-3 w-3 rounded-full bg-yellow-400"></div>
-                <span id="status-text" class="text-sm font-medium text-gray-600">AI Model Loading...</span>
-            </div>
-        </header>
-        <div id="main-content" class="flex-1 p-8 overflow-y-auto">
-            <!-- Content will be injected here -->
-        </div>
-    </main>
-
-    <!-- Modal for Upload -->
-    <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg transform transition-all duration-300 scale-95">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold text-gray-800">Upload Your Content</h3>
-                <button id="closeModal" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
-            </div>
-            <p class="text-gray-600 mb-6">Upload a document (.pdf or .txt) to get started.</p>
-            <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-gray-400">
-                <p class="text-gray-500">Drag & drop your file here</p>
-                <p class="text-gray-400 text-sm my-2">or</p>
-                <button id="browseButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg">Browse File</button>
-                <input type="file" id="fileInput" class="hidden" accept=".pdf,.txt">
-            </div>
-            <div class="mt-6 flex justify-end">
-                <button id="processContentBtn" class="btn-primary font-bold py-2 px-6 rounded-lg flex items-center">
-                    <span id="buttonText">Process Content</span>
-                    <svg id="loadingSpinner" class="animate-spin -mr-1 ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                </button>
-            </div>
-        </div>
+  <!-- Sidebar -->
+  <aside class="w-20 md:w-64 main-bg text-white flex flex-col flex-shrink-0">
+    <div class="h-20 flex items-center justify-center border-b border-gray-700">
+      <svg class="h-10 w-10 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-5.747-8.247l11.494 4.994M6.253 18l11.494-4.994"/></svg>
+      <h1 class="hidden md:block ml-3 text-2xl font-bold text-accent">Praxis AI</h1>
     </div>
+    <nav class="flex-1 px-4 py-8 space-y-4">
+      <a href="#" id="dashboard-link" class="flex items-center p-2 rounded-lg accent-bg shadow-md">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span class="hidden md:block ml-4 font-semibold">Dashboard</span>
+      </a>
+    </nav>
+  </aside>
 
-    <script>
-        // --- DOM Elements ---
-        const mainContent = document.getElementById('main-content');
-        const uploadModal = document.getElementById('uploadModal');
-        const closeModal = document.getElementById('closeModal');
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('fileInput');
-        const browseButton = document.getElementById('browseButton');
-        const processContentBtn = document.getElementById('processContentBtn');
-        const buttonText = document.getElementById('buttonText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const dashboardLink = document.getElementById('dashboard-link');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-20 flex items-center justify-between px-8 bg-white border-b flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <h2 class="text-2xl font-bold text-gray-800">Welcome, Teacher!</h2>
+        <span id="features-chip" class="hidden badge">…</span>
+      </div>
+      <div id="status-indicator" class="flex items-center space-x-2">
+        <div id="status-dot" class="h-3 w-3 rounded-full bg-yellow-400 animate-pulse"></div>
+        <span id="status-text" class="text-sm font-medium text-gray-600">Connecting to AI Service...</span>
+      </div>
+    </header>
+    <div id="main-content" class="flex-1 p-8 overflow-y-auto"><!-- injected --></div>
+  </main>
 
-        // --- State ---
-        const BACKEND_URL = 'http://127.0.0.1:8000';
-        let fulltextContent = '';
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-lg">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-gray-800">Upload Your Content</h3>
+        <button id="closeModal" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+      </div>
+      <p class="text-gray-600 mb-6">Upload a document (.pdf or .txt) to get started.</p>
+      <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-gray-400">
+        <p class="text-gray-500">Drag & drop your file here or</p>
+        <button id="browseButton" class="text-blue-500 font-semibold">Browse File</button>
+        <input type="file" id="fileInput" class="hidden" accept=".pdf,.txt">
+      </div>
+      <div class="mt-6 flex justify-between items-center">
+        <span class="text-xs text-gray-500">Tip: press <span class="kbd">Esc</span> to close</span>
+        <button id="processContentBtn" class="btn-primary font-bold py-2 px-6 rounded-lg flex items-center" disabled>
+          <span id="buttonText">Process Content</span>
+          <svg id="loadingSpinner" class="animate-spin -mr-1 ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
 
-        // --- HTML Templates ---
-        const initialDashboardHTML = `
-            <div class="gradient-banner rounded-xl shadow-lg p-8 mb-8 flex items-center justify-between">
-                <div>
-                    <h3 class="text-3xl font-bold text-white">Let's Create a New Lesson</h3>
-                    <p class="text-accent mt-2">Upload your content to get started with AI-powered slides, quizzes, and more.</p>
-                </div>
-                <button id="uploadButton" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-transform">
-                    Upload Content
-                </button>
+  <script>
+    // ---------- CONFIG ----------
+    const BACKEND_URL = 'http://127.0.0.1:8000';
+
+    // ---------- STATE ----------
+    let fulltextContent = '';
+    let lessonData = {};
+    let lastSlidesJson = null; // for PDF download
+    const studentList = ["Alice Johnson","Bob Williams","Charlie Brown","Diana Miller","Ethan Davis","Fiona Garcia","George Rodriguez","Helen Martinez","Ian Hernandez","Jane Lopez"];
+    let featuresStatus = { pdf_generation: true, image_generation: true, html_generation: true, visual_slides: true, enhanced_prompts: true };
+
+    // ---------- DOM ----------
+    const $ = (id) => document.getElementById(id);
+    const mainContent = $('main-content');
+    const uploadModal = $('uploadModal');
+    const closeModal = $('closeModal');
+    const dropzone = $('dropzone');
+    const fileInput = $('fileInput');
+    const browseButton = $('browseButton');
+    const processContentBtn = $('processContentBtn');
+    const buttonText = $('buttonText');
+    const loadingSpinner = $('loadingSpinner');
+    const dashboardLink = $('dashboard-link');
+    const statusDot = $('status-dot');
+    const statusText = $('status-text');
+    const featuresChip = $('features-chip');
+
+    // ---------- UTIL ----------
+    function setLoading(isLoading, btn, textEl, spinnerEl, baseText) {
+      try {
+        btn.disabled = isLoading;
+        if (textEl) textEl.textContent = isLoading ? 'Working…' : baseText;
+        if (spinnerEl) spinnerEl.classList.toggle('hidden', !isLoading);
+      } catch {}
+    }
+    function toast(message, type='error') {
+      const el = document.createElement('div');
+      el.className = `fixed top-4 right-4 px-4 py-3 rounded shadow-lg text-white z-[9999] ${type==='error'?'bg-red-600':'bg-green-600'}`;
+      el.textContent = message;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 2800);
+    }
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename || 'download';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function apiFetch(url, opts={}) {
+      const res = await fetch(url, opts);
+      if (!res.ok) {
+        let detail = '';
+        try { const e = await res.json(); detail = e?.detail || JSON.stringify(e); } catch {}
+        throw new Error(`${res.status} ${res.statusText}${detail ? ' – ' + detail : ''}`);
+      }
+      // Decide JSON vs blob by content-type
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) return res.json();
+      return res.blob();
+    }
+
+    // ---------- STATUS ----------
+    async function checkBackendStatus() {
+      try {
+        const root = await apiFetch(`${BACKEND_URL}/`);
+        statusDot.classList.remove('bg-yellow-400','bg-red-500','animate-pulse');
+        statusDot.classList.add('bg-green-500');
+        statusText.textContent = 'AI Service Ready';
+
+        // Features
+        try {
+          featuresStatus = await apiFetch(`${BACKEND_URL}/features-status/`);
+          featuresChip.classList.remove('hidden');
+          const enabled = Object.entries(featuresStatus).filter(([,v])=>v).map(([k])=>k.replace(/_/g,' '));
+          featuresChip.textContent = enabled.length ? `Features: ${enabled.join(', ')}` : 'No features reported';
+        } catch {
+          // ignore if endpoint not present
+        }
+      } catch (error) {
+        statusDot.classList.remove('bg-yellow-400','bg-green-500','animate-pulse');
+        statusDot.classList.add('bg-red-500');
+        statusText.textContent = 'Backend Unreachable';
+        console.error("Backend status error:", error);
+      }
+    }
+
+    // ---------- DASHBOARD ----------
+    const initialDashboardHTML = `
+      <div class="gradient-banner rounded-xl shadow-lg p-8 mb-8 flex items-center justify-between">
+        <div>
+          <h3 class="text-3xl font-bold text-white">Let's Create a New Lesson</h3>
+          <p class="text-accent mt-2">Upload your content to get started with AI-powered lesson plans, exams, and more.</p>
+        </div>
+        <button id="uploadButton" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-md transform hover:scale-105 transition-transform">
+          Upload Content
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">Recent Activity</h4><p class="text-gray-500">No recent lessons created.</p></div>
+        <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">My Classes</h4><p class="text-gray-500">English 101, History 202</p></div>
+        <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h4><p class="text-gray-500">Plan a new lesson or review student progress.</p></div>
+      </div>`;
+
+    function showDashboard() {
+      mainContent.innerHTML = initialDashboardHTML;
+      $('uploadButton').addEventListener('click', () => {
+        uploadModal.classList.remove('hidden');
+        uploadModal.classList.add('flex');
+      });
+    }
+
+    // ---------- MODAL + FILE ----------
+    closeModal.addEventListener('click', () => uploadModal.classList.add('hidden'));
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') uploadModal.classList.add('hidden'); });
+    browseButton.addEventListener('click', () => fileInput.click());
+    dashboardLink.addEventListener('click', (e) => { e.preventDefault(); showDashboard(); });
+
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('border-blue-500'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-blue-500'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('border-blue-500');
+      if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        updateDropzoneText(fileInput.files[0].name);
+      }
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) updateDropzoneText(fileInput.files[0].name);
+    });
+    function updateDropzoneText(name) {
+      dropzone.querySelector('p').textContent = `File selected: ${name}`;
+      processContentBtn.disabled = false;
+    }
+
+    // ---------- PROCESS CONTENT ----------
+    processContentBtn.addEventListener('click', async () => {
+      if (!fileInput.files[0]) return alert('Please select a file.');
+      setLoading(true, processContentBtn, buttonText, loadingSpinner, 'Process Content');
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const result = await apiFetch(`${BACKEND_URL}/process-content/`, { method:'POST', body: formData });
+        lessonData = result;
+        fulltextContent = result.full_content || '';
+        displayLessonHub(result);
+        uploadModal.classList.add('hidden');
+        toast('Content processed successfully!', 'success');
+      } catch (error) {
+        console.error(error);
+        toast(`Process failed: ${error.message}`);
+      } finally {
+        setLoading(false, processContentBtn, buttonText, loadingSpinner, 'Process Content');
+      }
+    });
+
+    // ---------- GENERIC CONTENT HOST ----------
+    const hubDisplay = () => $('hub-content-display');
+
+    // ---------- HUB ----------
+    function displayLessonHub(data) {
+      mainContent.innerHTML = `
+        <div class="bg-white rounded-xl shadow-md p-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-3xl font-bold text-gray-800 mb-2">Lesson Hub</h2>
+              <p class="text-gray-600 mb-6">Generated from: <strong>${(data.summary||'').replace(/'/g, "")}</strong></p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">Recent Activity</h4></div>
-                <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">My Classes</h4></div>
-                <div class="card-bg rounded-xl shadow-md p-6"><h4 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h4></div>
-            </div>`;
+            <div class="text-right">
+              <div class="text-xs text-gray-500">Slide topics</div>
+              <div class="text-sm text-gray-700">${Array.isArray(data.slide_topics)? data.slide_topics.join(' • ') : '—'}</div>
+            </div>
+          </div>
+          <div class="border-b border-gray-200 mb-4">
+            <nav id="hub-tabs" class="-mb-px flex flex-wrap gap-2" aria-label="Tabs"><!-- tabs --></nav>
+          </div>
+          <div class="flex items-center gap-3 mb-4">
+            <button id="btn-generate-slides" class="btn-primary py-2 px-4 rounded-lg flex items-center gap-2">
+              <span>Generate Detailed Slides</span>
+              <svg class="animate-spin h-4 w-4 hidden" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+            </button>
+            <button id="btn-download-pdf" class="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50" disabled>
+              Download Slides PDF
+            </button>
+          </div>
+          <div id="hub-content-display" class="bg-gray-50 rounded-lg p-6 min-h-[400px]"></div>
+        </div>`;
 
-        function showDashboard() {
-            mainContent.innerHTML = initialDashboardHTML;
-            document.getElementById('uploadButton').addEventListener('click', showModal);
-        }
+      // Tabs config
+      const tabs = [
+        { id: 'slides',       name: 'Detailed Slides', generator: () => generateSlidesWorkflow() },
+        { id: 'quiz',         name: 'Quiz',            generator: () => makeTextApi('/generate-quiz/', fulltextContent, $('quiz-tab'), displayQuiz) },
+        { id: 'exam',         name: 'Exam',            generator: () => makeTextApi('/generate-exam/', fulltextContent, $('exam-tab'), displayExam) },
+        { id: 'announcement', name: 'Announcement',    generator: () => makeTextApi('/generate-announcement/', fulltextContent, $('announcement-tab'), displayAnnouncement) },
+        { id: 'attendance',   name: 'Attendance',      generator: displayAttendanceTracker },
+      ];
 
-        // --- Status Checking ---
-        async function checkBackendStatus() {
-            try {
-                const response = await fetch(`${BACKEND_URL}/status`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                if (data.is_ready) {
-                    statusDot.classList.remove('bg-yellow-400', 'bg-red-500');
-                    statusDot.classList.add('bg-green-500');
-                    statusText.textContent = 'AI Model Ready';
-                } else if (data.error_message) {
-                    statusDot.classList.remove('bg-yellow-400', 'bg-green-500');
-                    statusDot.classList.add('bg-red-500');
-                    statusText.textContent = 'AI Model Error';
-                    alert(`Backend Error: ${data.error_message}`);
-                } else {
-                    // Still loading, check again
-                    setTimeout(checkBackendStatus, 5000);
-                }
-            } catch (error) {
-                statusDot.classList.remove('bg-yellow-400', 'bg-green-500');
-                statusDot.classList.add('bg-red-500');
-                statusText.textContent = 'Backend Unreachable';
-                console.error("Could not connect to backend.", error);
-            }
-        }
-        
-        // --- Modal ---
-        const showModal = () => uploadModal.classList.remove('hidden', 'flex') || uploadModal.classList.add('flex');
-        const hideModal = () => uploadModal.classList.add('hidden');
-        closeModal.addEventListener('click', hideModal);
-        browseButton.addEventListener('click', () => fileInput.click());
-        dashboardLink.addEventListener('click', (e) => { e.preventDefault(); showDashboard(); });
+      // Render tabs
+      const hubTabs = $('hub-tabs');
+      hubTabs.innerHTML = tabs.map(tab => `
+        <button id="${tab.id}-tab" data-tab="${tab.id}" class="tab-button whitespace-nowrap py-3 px-3 border-b-2 font-medium text-sm flex items-center gap-2">
+          ${tab.name}
+          <svg class="animate-spin h-4 w-4 hidden" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+        </button>
+      `).join('');
 
-        // --- File Handling ---
-        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('border-blue-500'); });
-        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-blue-500'));
-        dropzone.addEventListener('drop', e => {
-            e.preventDefault();
-            dropzone.classList.remove('border-blue-500');
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                updateDropzoneText(fileInput.files[0].name);
-            }
-        });
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) updateDropzoneText(fileInput.files[0].name);
-        });
-        const updateDropzoneText = (name) => dropzone.querySelector('p').textContent = `File: ${name}`;
+      hubTabs.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (!button) return;
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        const tabId = button.dataset.tab;
+        const tab = tabs.find(t => t.id === tabId);
+        if (tab) tab.generator();
+      });
 
-        // --- API Calls ---
-        function setLoading(isLoading, btn, textEl, spinnerEl, text) {
-            btn.disabled = isLoading;
-            textEl.textContent = isLoading ? 'Generating...' : text;
-            spinnerEl.classList.toggle('hidden', !isLoading);
-        }
+      // Slide + PDF buttons
+      $('btn-generate-slides').addEventListener('click', generateSlidesWorkflow);
+      $('btn-download-pdf').addEventListener('click', downloadSlidesPDF);
 
-        async function makeApiCall(endpoint, content, button, textElement, spinnerElement, buttonText, displayFunction) {
-            setLoading(true, button, textElement, spinnerElement, buttonText);
-            const formData = new FormData();
-            formData.append('content', content);
-            try {
-                const response = await fetch(`${BACKEND_URL}${endpoint}`, { method: 'POST', body: formData });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                displayFunction(result);
-            } catch (error) {
-                alert(`An error occurred: ${error.message}`);
-            } finally {
-                setLoading(false, button, textElement, spinnerElement, buttonText);
-            }
-        }
+      // default tab
+      $('slides-tab').click();
+    }
 
-        processContentBtn.addEventListener('click', async () => {
-            if (!fileInput.files[0]) {
-                alert('Please select a file.');
-                return;
-            }
-            setLoading(true, processContentBtn, buttonText, loadingSpinner, 'Process Content');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            try {
-                const response = await fetch(`${BACKEND_URL}/process-content/`, { method: 'POST', body: formData });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                fulltextContent = result.full_content; // Save full content
-                displayLessonHub(result);
-                hideModal();
-            } catch (error) {
-                alert(`An error occurred: ${error.message}`);
-            } finally {
-                setLoading(false, processContentBtn, buttonText, loadingSpinner, 'Process Content');
-            }
-        });
+    // ---------- API HELPERS ----------
+    async function makeTextApi(endpoint, content, buttonEl, displayFn) {
+      const spinner = buttonEl?.querySelector('svg');
+      if (buttonEl) setTabButtonLoading(true, buttonEl, spinner);
+      try {
+        const form = new FormData();
+        form.append('content', content || '');
+        const data = await apiFetch(`${BACKEND_URL}${endpoint}`, { method:'POST', body: form });
+        displayFn(data);
+      } catch (e) {
+        console.error(e);
+        toast(`Request failed: ${e.message}`);
+      } finally {
+        if (buttonEl) setTabButtonLoading(false, buttonEl, spinner);
+      }
+    }
 
-        // --- Display Functions ---
-        function displayLessonHub(data) {
-            mainContent.innerHTML = `
-                <div class="bg-white rounded-xl shadow-md p-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Lesson Hub</h2>
-                    <p class="text-gray-600 mb-6">Generated from: <strong>${data.summary}</strong></p>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Actions -->
-                        <div class="lg:col-span-1 flex flex-col space-y-4">
-                            <button id="genSlidesBtn" class="action-button font-bold py-3 px-4 rounded-lg w-full text-left">View Slide Topics</button>
-                            <button id="genQuizBtn" class="action-button font-bold py-3 px-4 rounded-lg w-full text-left flex items-center">
-                                <span class="flex-1">Generate 5-Question Quiz</span>
-                                <svg id="quizSpinner" class="animate-spin ml-2 h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                            <button id="genAnnounceBtn" class="action-button font-bold py-3 px-4 rounded-lg w-full text-left flex items-center">
-                                <span class="flex-1">Generate Announcement</span>
-                                <svg id="announceSpinner" class="animate-spin ml-2 h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                        </div>
-                        <!-- Content Display -->
-                        <div id="hub-content-display" class="lg:col-span-2 bg-gray-50 rounded-lg p-6 min-h-[300px]"></div>
-                    </div>
-                </div>`;
-            
-            const hubDisplay = document.getElementById('hub-content-display');
-            
-            const displaySlides = () => {
-                hubDisplay.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4">Suggested Slide Topics:</h3>
-                    <ul class="list-disc list-inside space-y-2">${data.slide_topics.map(t => `<li class="text-gray-700">${t}</li>`).join('')}</ul>`;
-            };
+    function setTabButtonLoading(isLoading, btn, spinner) {
+      if (!btn) return;
+      btn.disabled = isLoading;
+      if (spinner) spinner.classList.toggle('hidden', !isLoading);
+      if (isLoading) btn.classList.add('opacity-60'); else btn.classList.remove('opacity-60');
+    }
 
-            const displayQuiz = (quizData) => {
-                hubDisplay.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4">Generated Quiz:</h3>
-                    <div class="space-y-4">${quizData.quiz.map((q, i) => `
-                        <div class="text-gray-800">
-                            <p class="font-semibold">${i+1}. ${q.question}</p>
-                            <p class="text-sm text-green-600 font-medium">Answer: ${q.answer}</p>
-                        </div>`).join('')}
-                    </div>`;
-            };
+    // ---------- SLIDES FLOW ----------
+    async function generateSlidesWorkflow() {
+      const btn = $('btn-generate-slides');
+      const spinner = btn.querySelector('svg');
+      setLoading(true, btn, btn.querySelector('span'), spinner, 'Generate Detailed Slides');
+      try {
+        const form = new FormData();
+        form.append('content', fulltextContent || '');
+        const data = await apiFetch(`${BACKEND_URL}/generate-detailed-slides/`, { method:'POST', body: form });
 
-            const displayAnnouncement = (announceData) => {
-                hubDisplay.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4">Generated Announcement:</h3>
-                    <p class="text-gray-800 whitespace-pre-wrap">${announceData.announcement_text}</p>`;
-            };
+        // Keep last slides JSON for PDF generation
+        lastSlidesJson = { slides: data.slides || [] };
 
-            document.getElementById('genSlidesBtn').addEventListener('click', displaySlides);
-            document.getElementById('genQuizBtn').addEventListener('click', (e) => makeApiCall('/generate-quiz/', fulltextContent, e.currentTarget, e.currentTarget.querySelector('span'), document.getElementById('quizSpinner'), 'Generate 5-Question Quiz', displayQuiz));
-            document.getElementById('genAnnounceBtn').addEventListener('click', (e) => makeApiCall('/generate-announcement/', fulltextContent, e.currentTarget, e.currentTarget.querySelector('span'), document.getElementById('announceSpinner'), 'Generate Announcement', displayAnnouncement));
+        displayDetailedSlides(data);
+        $('btn-download-pdf').disabled = !(featuresStatus?.pdf_generation && data?.slides?.length);
+        toast('Slides generated!', 'success');
+      } catch (e) {
+        console.error(e);
+        toast(`Slides failed: ${e.message}`);
+      } finally {
+        setLoading(false, btn, btn.querySelector('span'), spinner, 'Generate Detailed Slides');
+      }
+    }
 
-            displaySlides(); // Show slides by default
-        }
+    async function downloadSlidesPDF() {
+      if (!lastSlidesJson || !Array.isArray(lastSlidesJson.slides) || !lastSlidesJson.slides.length) {
+        return toast('No slides to export. Generate slides first.');
+      }
+      const btn = $('btn-download-pdf');
+      btn.disabled = true; btn.textContent = 'Preparing PDF…';
+      try {
+        const form = new FormData();
+        form.append('slides_json', JSON.stringify(lastSlidesJson));
+        const blob = await apiFetch(`${BACKEND_URL}/download-slides-pdf/`, { method:'POST', body: form });
+        downloadBlob(blob, `presentation_slides_${new Date().toISOString().replace(/[:.]/g,'-')}.pdf`);
+      } catch (e) {
+        console.error(e);
+        toast(`PDF error: ${e.message}`);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Download Slides PDF';
+      }
+    }
 
-        // --- Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            showDashboard();
-            checkBackendStatus();
-        });
-    </script>
+    // ---------- RENDERERS ----------
+    function displayDetailedSlides(data) {
+      const slides = Array.isArray(data.slides) ? data.slides : [];
+      if (!slides.length) {
+        hubDisplay().innerHTML = `<div class="text-gray-600">No slides returned.</div>`;
+        return;
+      }
+
+      // enrich: color scheme tag
+      const colorPill = (scheme) => `<span class="badge">${scheme || 'blue'}</span>`;
+
+      hubDisplay().innerHTML = slides.map((slide, i) => {
+        const img = slide.image_base64 ? `<img class="w-full rounded-lg shadow" src="data:image/png;base64,${slide.image_base64}" alt="Slide ${i+1} image" />` : `<div class="w-full h-48 bg-gray-200 rounded grid place-items-center text-gray-500">No image</div>`;
+        const bullets = (slide.bullet_points||[]).map(p => `<li>${p}</li>`).join('');
+        const meta = [
+          slide.slide_type ? `Type: <strong>${slide.slide_type}</strong>` : '',
+          slide.visual_theme ? `Theme: <strong>${slide.visual_theme}</strong>` : ''
+        ].filter(Boolean).join(' • ');
+
+        return `
+          <div class="mb-8 pb-6 border-b">
+            <div class="flex items-start justify-between gap-4">
+              <h4 class="text-xl font-bold text-gray-800 mb-2">Slide ${i + 1}: ${slide.title || 'Untitled'}</h4>
+              <div>${colorPill(slide.color_scheme)}</div>
+            </div>
+            ${slide.subtitle ? `<p class="text-sm text-gray-500 mb-3">${slide.subtitle}</p>` : ''}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h5 class="font-semibold text-gray-600 mb-1">Content</h5>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">${bullets}</ul>
+                ${slide.key_takeaway ? `<div class="mt-3 text-amber-600"><span class="font-semibold">Key Takeaway:</span> ${slide.key_takeaway}</div>` : ''}
+                ${meta ? `<div class="mt-2 text-xs text-gray-500">${meta}</div>` : ''}
+                ${slide.speaker_notes ? `<details class="mt-3"><summary class="cursor-pointer text-sm text-gray-600">Speaker Notes</summary><p class="text-gray-700 text-sm italic mt-2">${slide.speaker_notes}</p></details>` : ''}
+              </div>
+              <div>
+                ${img}
+                ${slide.image_base64 ? `
+                  <div class="mt-2">
+                    <a class="text-sm text-blue-700 hover:underline" download="slide_${i+1}.png" href="data:image/png;base64,${slide.image_base64}">Download image</a>
+                  </div>` : ``}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function displayQuiz(data) {
+      const quiz = Array.isArray(data.quiz) ? data.quiz : [];
+      if (!quiz.length) { hubDisplay().innerHTML = `<div class="text-gray-600">No quiz returned.</div>`; return; }
+
+      hubDisplay().innerHTML = `
+        <h3 class="text-2xl font-bold text-gray-700 mb-4">Generated Quiz</h3>
+        <div class="space-y-5">
+          ${quiz.map((q, i) => `
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+              <p class="font-semibold">${i+1}. ${q.question}</p>
+              <ul class="mt-2 space-y-1">
+                ${q.options.map((o, idx) => `
+                  <li>
+                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="q-${i}" value="${o}" class="text-blue-600">
+                      <span>${o}</span>
+                    </label>
+                  </li>`).join('')}
+              </ul>
+              <details class="mt-2">
+                <summary class="text-sm text-gray-600 cursor-pointer">Show Answer</summary>
+                <div class="mt-1 text-green-700 text-sm"><strong>Answer:</strong> ${q.answer}</div>
+                ${q.explanation ? `<div class="text-gray-600 text-sm mt-1">${q.explanation}</div>` : ''}
+              </details>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function displayExam(data) {
+      const mc = data?.exam?.multiple_choice || [];
+      const sa = data?.exam?.short_answer || [];
+      hubDisplay().innerHTML = `
+        <h3 class="text-2xl font-bold text-gray-700 mb-4 border-b pb-2">Generated Exam</h3>
+        <h4 class="text-xl font-semibold text-gray-600 mt-4 mb-2">Part 1: Multiple Choice</h4>
+        ${mc.length ? mc.map((q,i) => `
+          <div class="mb-4 bg-white p-4 rounded shadow-sm">
+            <p class="font-semibold">${i + 1}. ${q.question}</p>
+            <ul class="list-disc list-inside ml-4 mt-1">${(q.options||[]).map(o=>`<li>${o}</li>`).join('')}</ul>
+            <details class="mt-2">
+              <summary class="cursor-pointer text-sm text-gray-600">Show Answer</summary>
+              <p class="text-sm text-green-700 font-medium mt-1">Answer: ${q.answer}</p>
+              ${q.explanation ? `<p class="text-gray-600 text-sm mt-1">${q.explanation}</p>` : ``}
+            </details>
+          </div>`).join('') : `<div class="text-gray-600">No multiple-choice questions returned.</div>`}
+        <h4 class="text-xl font-semibold text-gray-600 mt-6 mb-2">Part 2: Short Answer</h4>
+        ${sa.length ? sa.map((q,i) => `
+          <div class="mb-4 bg-white p-4 rounded shadow-sm">
+            <p class="font-semibold">${i + 1}. ${q.question}</p>
+            <div class="mt-2 border rounded p-3 text-sm text-gray-500">Points: ${q.points ?? 0}</div>
+            <details class="mt-2">
+              <summary class="cursor-pointer text-sm text-gray-600">Sample Answer</summary>
+              <p class="text-gray-700 text-sm mt-1">${q.sample_answer || '—'}</p>
+            </details>
+          </div>`).join('') : `<div class="text-gray-600">No short-answer questions returned.</div>`}
+      `;
+    }
+
+    function displayAnnouncement(data) {
+      const text = data?.announcement_text || '—';
+      const emoji = data?.emoji || '📣';
+      const cta = data?.call_to_action || '';
+      hubDisplay().innerHTML = `
+        <h3 class="text-2xl font-bold text-gray-700 mb-4">Generated Announcement</h3>
+        <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 rounded">
+          <p class="font-bold">${emoji} Heads up, class!</p>
+          <p class="mt-1">${text}</p>
+          ${cta ? `<div class="mt-3"><span class="text-sm text-blue-800 font-medium">Next step:</span> ${cta}</div>` : ``}
+        </div>`;
+    }
+
+    function displayAttendanceTracker() {
+      hubDisplay().innerHTML = `
+        <h3 class="text-2xl font-bold text-gray-700 mb-4">Attendance Tracker</h3>
+        <div class="space-y-3">
+          ${studentList.map(student => `
+            <div class="flex items-center justify-between bg-white p-3 rounded-md shadow-sm">
+              <span class="text-gray-800">${student}</span>
+              <div class="flex items-center space-x-2">
+                <label class="flex items-center space-x-1 cursor-pointer">
+                  <input type="radio" name="attendance-${student.replace(/\s+/g, '-')}" class="text-green-600" checked>
+                  <span class="text-sm text-gray-600">Present</span>
+                </label>
+                <label class="flex items-center space-x-1 cursor-pointer">
+                  <input type="radio" name="attendance-${student.replace(/\s+/g, '-')}" class="text-red-600">
+                  <span class="text-sm text-gray-600">Absent</span>
+                </label>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <button id="saveAttendance" class="mt-6 btn-primary font-bold py-2 px-6 rounded-lg">Save Attendance</button>
+      `;
+      $('saveAttendance').addEventListener('click', () => toast('Attendance saved (local demo).','success'));
+    }
+
+    // ---------- INIT ----------
+    document.addEventListener('DOMContentLoaded', () => {
+      showDashboard();
+      checkBackendStatus();
+    });
+  </script>
 </body>
 </html>
